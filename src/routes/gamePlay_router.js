@@ -1,5 +1,14 @@
-const express = require('express');
-const router = express.Router();
+import express from 'express';
+//import { PrismaClient } from '@prisma/client';
+
+const router = express.Router(); // express.Router()를 이용해 라우터를 생성합니다.
+// const prisma = new PrismaClient({
+//   // Prisma를 이용해 데이터베이스를 접근할 때, SQL을 출력해줍니다.
+//   log: ['query', 'info', 'warn', 'error'],
+
+//   // 에러 메시지를 평문이 아닌, 개발자가 읽기 쉬운 형태로 출력해줍니다.
+//   errorFormat: 'pretty',
+// }); // PrismaClient 인스턴스를 생성합니다.
 
 // A 유저 팀과 B 유저 팀의 스탯 예시
 const teams = {
@@ -39,14 +48,11 @@ function calculateTeamScore(team) {
   return totalScore;
 }
 
-// 비동기 작업 예시 (DB에 게임 결과 저장)
+// 비동기 작업 (DB에 게임 결과 저장)
 async function saveGameResult(result) {
-  // 예시: 비동기 작업을 시뮬레이션 (1초 지연)
   return new Promise((resolve) => {
-    setTimeout(() => {
-      console.log('Game result saved to database:', result);
-      resolve();
-    }, 1000);
+    console.log('Game result saved to database:', result);
+    resolve();
   });
 }
 
@@ -65,12 +71,12 @@ router.post('/play', async (req, res) => {
     if (randomValue < scoreA) {
       const aScore = Math.floor(Math.random() * 4) + 2; // 2~5
       const bScore = Math.floor(Math.random() * Math.min(3, aScore));
-      result = `A 유저 승리: A ${aScore} - ${bScore} B`;
+      result = `A 유저 승리: A ${aScore}-${bScore} B`;
     } else {
       // B 팀이 승리하는 경우
       const bScore = Math.floor(Math.random() * 4) + 2;
       const aScore = Math.floor(Math.random() * Math.min(3, bScore));
-      result = `B 유저 승리: B ${bScore} - ${aScore} A`;
+      result = `B 유저 승리: B ${bScore}-${aScore} A`;
     }
 
     // 비동기 작업: 게임 결과 저장 (DB 또는 외부 API)
@@ -81,8 +87,8 @@ router.post('/play', async (req, res) => {
   } catch (error) {
     // 오류 처리
     console.error(error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    res.status(500).json({ message: 'Server Error: GamePlay' });
   }
 });
 
-export default module;
+export default router;
