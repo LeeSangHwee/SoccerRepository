@@ -2,15 +2,18 @@ import express from 'express';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 dotenv.config();
+import gameplayRouter from './routes/gamePlay_router.js'; // gamePlay.js 라우터 임포트
 
 const app = express();
 const PORT = 3306;
 
+// Body 데이터를 JSON 형태로 받을 수 있게 설정
 app.use(express.json());
-// app.use(cookieParser());
-// app.use('/api', [UsersRouter, CharactersRouter, ItemsRouter]);
 
+// api/games 경로로 gameRouter 사용
+app.use('/api', [gameplayRouter]);
 
+// 서버 실행
 app.listen(PORT, () => {
-    console.log(PORT, '포트로 서버가 열렸어요!');
-  });
+  console.log(`Server Starting - http://localhost:${PORT}`);
+});
