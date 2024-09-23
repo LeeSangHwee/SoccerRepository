@@ -8,7 +8,54 @@ generator client {
   provider = "prisma-client-js"
 }
 
-datasource db {
+datasource scoccerDB {
   provider = "mysql"
   url      = env("DATABASE_URL")
+}
+
+model Account {
+  id       Int    @id @default(autoincrement())
+  account  String @unique
+  password String
+  nickName String @unique
+  cash     Int    @default(2000)
+  rp       Int    @default(1000)
+
+  inventory Inventory?
+  team      Team?
+
+  @@map("Account")
+}
+
+model Inventory {
+  inventoryId Int @id @default(autoincrement())
+  accountId   Int @unique @map("account_id")
+  characterId Int
+
+  user Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@map("Inventory")
+}
+
+model Team {
+  teamId      Int @id @default(autoincrement())
+  accountId      Int @unique
+  characterId Int @map("account_id")
+
+  user Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@map("Team")
+}
+
+model Character {
+  characterId Int    @id @default(autoincrement())
+  name        String @unique
+  rarity      String
+  speed       Int
+  goal   Int
+  shot  Int
+  defense     Int
+  stamina     Int
+
+  @@map("Character")
 }
