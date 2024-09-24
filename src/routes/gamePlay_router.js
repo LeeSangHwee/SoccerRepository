@@ -1,28 +1,28 @@
 import express from 'express';
-//import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 
 const router = express.Router(); // express.Router()를 이용해 라우터를 생성합니다.
-// const prisma = new PrismaClient({
-//   // Prisma를 이용해 데이터베이스를 접근할 때, SQL을 출력해줍니다.
-//   log: ['query', 'info', 'warn', 'error'],
+const prisma = new PrismaClient({
+  // Prisma를 이용해 데이터베이스를 접근할 때, SQL을 출력해줍니다.
+  log: ['query', 'info', 'warn', 'error'],
 
-//   // 에러 메시지를 평문이 아닌, 개발자가 읽기 쉬운 형태로 출력해줍니다.
-//   errorFormat: 'pretty',
-// }); // PrismaClient 인스턴스를 생성합니다.
+  // 에러 메시지를 평문이 아닌, 개발자가 읽기 쉬운 형태로 출력해줍니다.
+  errorFormat: 'pretty',
+}); // PrismaClient 인스턴스를 생성합니다.
 
 // A 유저 팀과 B 유저 팀의 스탯 예시
-const teams = {
-  A: {
-    player1: { speed: 85, goal: 90, shot: 88, defense: 60, stamina: 80 },
-    player2: { speed: 78, goal: 75, shot: 80, defense: 70, stamina: 85 },
-    player3: { speed: 70, goal: 60, shot: 65, defense: 90, stamina: 82 },
-  },
-  B: {
-    player1: { speed: 88, goal: 85, shot: 90, defense: 55, stamina: 78 },
-    player2: { speed: 80, goal: 70, shot: 75, defense: 72, stamina: 88 },
-    player3: { speed: 72, goal: 65, shot: 68, defense: 92, stamina: 83 },
-  },
-};
+// const teams = {
+//   A: {
+//     player1: { speed: 85, goal: 90, shot: 88, defense: 60, stamina: 80 },
+//     player2: { speed: 78, goal: 75, shot: 80, defense: 70, stamina: 85 },
+//     player3: { speed: 70, goal: 60, shot: 65, defense: 90, stamina: 82 },
+//   },
+//   B: {
+//     player1: { speed: 88, goal: 85, shot: 90, defense: 55, stamina: 78 },
+//     player2: { speed: 80, goal: 70, shot: 75, defense: 72, stamina: 88 },
+//     player3: { speed: 72, goal: 65, shot: 68, defense: 92, stamina: 83 },
+//   },
+// };
 
 // 가중치 설정
 const weights = {
@@ -72,6 +72,8 @@ router.post('/play', async (req, res) => {
       const aScore = Math.floor(Math.random() * 4) + 2; // 2~5
       const bScore = Math.floor(Math.random() * Math.min(3, aScore));
       result = `A 유저 승리: A ${aScore}-${bScore} B`;
+
+      
     } else {
       // B 팀이 승리하는 경우
       const bScore = Math.floor(Math.random() * 4) + 2;

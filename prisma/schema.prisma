@@ -8,7 +8,7 @@ generator client {
   provider = "prisma-client-js"
 }
 
-datasource scoccerDB {
+datasource SoccerProject_DB {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
@@ -30,7 +30,7 @@ model Account {
 model Inventory {
   inventoryId Int @id @default(autoincrement())
   accountId   Int @unique @map("account_id")
-  characterId Int
+  playerId Int
 
   user Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
@@ -39,16 +39,16 @@ model Inventory {
 
 model Team {
   teamId      Int @id @default(autoincrement())
-  accountId   Int @unique
-  characterId Int @map("account_id")
+  accountId      Int @unique
+  playerId Int @map("account_id")
 
   user Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
   @@map("Team")
 }
 
-model Character {
-  characterId Int    @id @default(autoincrement())
+model Player {
+  playerId Int    @id @default(autoincrement())
   name        String @unique
   rarity      String
   speed       Int
@@ -57,5 +57,5 @@ model Character {
   defense     Int
   stamina     Int
 
-  @@map("Character")
+  @@map("Player")
 }
