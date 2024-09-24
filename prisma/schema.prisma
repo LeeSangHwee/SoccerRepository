@@ -30,7 +30,7 @@ model Account {
 model Inventory {
   inventoryId Int @id @default(autoincrement())
   accountId   Int @unique @map("account_id")
-  playerId Int
+  playerId    Int
 
   user Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
@@ -38,9 +38,9 @@ model Inventory {
 }
 
 model Team {
-  teamId      Int @id @default(autoincrement())
-  accountId      Int @unique
-  playerId Int @map("account_id")
+  teamId    Int @id @default(autoincrement())
+  accountId Int @unique @map("account_id")
+  playerId  Int
 
   user Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
@@ -49,13 +49,13 @@ model Team {
 
 model Player {
   playerId Int    @id @default(autoincrement())
-  name        String @unique
-  rarity      String
-  speed       Int
-  goal        Int
-  shot        Int
-  defense     Int
-  stamina     Int
+  name     String @unique
+  rarity   String
+  speed    Int
+  goal     Int
+  shot     Int
+  defense  Int
+  stamina  Int
 
   @@map("Player")
 }
