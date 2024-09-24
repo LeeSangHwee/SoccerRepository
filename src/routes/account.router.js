@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import express from 'express';
 import { prisma } from '../utils/prisma/index.js';
+import authMiddleware from '../middlewares/auth.middleware.js';
 
 const router = express.Router();
 
@@ -82,6 +83,11 @@ router.post('/sign-in', async (req, res, next) => {
         console.error("로그인 중 에러 발생", err);
         return res.status(500).json({ message: "로그인 중 에러가 발생하였습니다." });
     }
+});
+
+//캐쉬충전 API
+router.patch('/purchase', authMiddleware, async (req, res, next)=>{
+
 });
 
 export default router;

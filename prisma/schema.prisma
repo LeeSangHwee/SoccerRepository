@@ -33,7 +33,7 @@ model Inventory {
   accountId   Int @map("account_id")
   playerId    Int
 
-  user Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  account Account @relation(fields: [accountId], references: [id])
 
   @@map("Inventory")
 }
@@ -43,7 +43,7 @@ model Team {
   accountId Int @map("account_id")
   playerId  Int
 
-  user Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  account Account @relation(fields: [accountId], references: [id])
 
   @@map("Team")
 }

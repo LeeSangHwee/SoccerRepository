@@ -1,6 +1,5 @@
-import express from "express";
-import dotenv from "dotenv";
-import cookieParser from "cookie-parser";
+import express from 'express';
+import dotenv from 'dotenv';
 dotenv.config();
 import accountRouter from "./routes/account.router.js";
 import gachaRouter from "./routes/gacha.router.js";
@@ -22,6 +21,7 @@ app.use("/api", [
   gameplayRouter,
   UserRankSearchRouter,
   enhanceRouter,
+  playerRouter,
 ]);
 
 // 서버 실행

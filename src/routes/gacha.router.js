@@ -8,10 +8,10 @@ const router = express.Router();
 router.post("/gacha", authMiddleware, async (req, res, next) => {
     try {
         //사용자id 가져오기
-        const userId = req.user;
+        const accountId = req.user.id;
         const user = await prisma.account.findFirst({
             where: {
-                id: userId.id,
+                id: accountId,
             },
         });
 
@@ -22,10 +22,6 @@ router.post("/gacha", authMiddleware, async (req, res, next) => {
                 message: "보유 캐쉬가 부족합니다.",
             });
         }
-        await prisma.account.update({
-            where:{id: user.id},
-            data: {cash: {decrement: cost}}
-        })
         /*
         가챠 로직
         등급 뽑기 -> 해당 등급 선수 중 랜덤        
@@ -67,7 +63,7 @@ router.post("/gacha", authMiddleware, async (req, res, next) => {
         //중복 확인
         const isExistPlayer = await prisma.inventory.findFirst({
             where: {
-                accountId: user.id,
+                accountId,
                 playerId: result_player.playerId,
             },
         });
@@ -81,9 +77,18 @@ router.post("/gacha", authMiddleware, async (req, res, next) => {
         //인벤토리에 생성
         await prisma.inventory.create({
             data: {
-                accountId: user.id,
+                accountId,
                 playerId: result_player.playerId,
             },
+        });
+        
+        await prisma.account.update({
+            where:{id: user.id},
+            data: {cash: {decrement: cost}}
+        })
+        const updatedUser = await prisma.account.findUnique({
+            where: {id: user.id},
+            select: {cash: true},
         });
 
         //응답 메시지
@@ -97,7 +102,7 @@ router.post("/gacha", authMiddleware, async (req, res, next) => {
                 shot: result_player.shot,
                 defense: result_player.defense,
                 stamina: result_player.stamina,
-                remaincash: user.cash
+                remaincash: updatedUser.cash
             },
         });
     } catch (err) {

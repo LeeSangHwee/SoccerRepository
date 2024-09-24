@@ -32,6 +32,7 @@ router.post('/create-player', async (req, res, next) => {
 
         return res.status(201).json({ data: newplayer });
     } catch (err) {
+        console.log(err);
         return res.status(500).json({ message: "선수 생성 중 에러" });
     }
 });
