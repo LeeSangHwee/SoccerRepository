@@ -1,14 +1,8 @@
 import express from 'express';
-import { PrismaClient } from '@prisma/client';
+import authMiddleware from "../middlewares/auth.middleware.js";
+import { prisma } from '../utils/prisma/index.js';
 
 const router = express.Router(); // express.Router()를 이용해 라우터를 생성합니다.
-const prisma = new PrismaClient({
-  // Prisma를 이용해 데이터베이스를 접근할 때, SQL을 출력해줍니다.
-  log: ['query', 'info', 'warn', 'error'],
-
-  // 에러 메시지를 평문이 아닌, 개발자가 읽기 쉬운 형태로 출력해줍니다.
-  errorFormat: 'pretty',
-}); // PrismaClient 인스턴스를 생성합니다.
 
 // A 유저 팀과 B 유저 팀의 스탯 예시
 // const teams = {
@@ -56,11 +50,31 @@ async function saveGameResult(result) {
   });
 }
 
-// 게임 결과 API (비동기)
-router.post('/play', async (req, res) => {
+// 게임 결과 API
+router.post('/play', authMiddleware, async (req, res, next) => {
   try {
-    const scoreA = calculateTeamScore(teams.A);
-    const scoreB = calculateTeamScore(teams.B);
+    //사용자id 가져오기
+    const userId = req.user;
+    const user_A = await prisma.account.findFirst({
+      where: {
+        id: userId.id,
+      },
+    });
+    
+    // 상대 매칭
+    const userFind = await prisma.account.findMany({
+      where: {
+        rp: {
+          gte: userId.rp - 10,
+          lte: userId.rp + 10
+        },
+        id: {not:userId.id}
+      },
+    });
+    const user_B = userFind[Math.floor((Math.random() * userFind.length - 1) + 1)];
+
+    const scoreA = calculateTeamScore(user_A.team);
+    const scoreB = calculateTeamScore(user_B.team);
 
     // 점수에 따른 최대값 설정
     const maxScore = scoreA + scoreB;
@@ -71,18 +85,20 @@ router.post('/play', async (req, res) => {
     if (randomValue < scoreA) {
       const aScore = Math.floor(Math.random() * 4) + 2; // 2~5
       const bScore = Math.floor(Math.random() * Math.min(3, aScore));
+      user_A.rp += 10;
+      user_B.rp -= 10;
       result = `A 유저 승리: A ${aScore}-${bScore} B`;
-
-      
     } else {
       // B 팀이 승리하는 경우
       const bScore = Math.floor(Math.random() * 4) + 2;
       const aScore = Math.floor(Math.random() * Math.min(3, bScore));
+      user_A.rp -= 10;
+      user_B.rp += 10;
       result = `B 유저 승리: B ${bScore}-${aScore} A`;
     }
 
-    // 비동기 작업: 게임 결과 저장 (DB 또는 외부 API)
-    await saveGameResult(result);
+    // // 비동기 작업: 게임 결과 저장 (DB 또는 외부 API)
+    // await saveGameResult(result);
 
     // 결과 응답
     res.json({ result });
