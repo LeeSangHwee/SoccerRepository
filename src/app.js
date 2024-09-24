@@ -6,8 +6,8 @@ dotenv.config();
 import accountRouter from "./routes/account.router.js";
 import gachaRouter from "./routes/gacha.router.js";
 import playerRouter from "./routes/player.router.js";
-import teamSettingRouter from './routes/teamSetting.router.js';
-import gameplayRouter from './routes/gamePlay.router.js'; // gamePlay.js 라우터 임포트
+//import teamSettingRouter from './routes/teamSetting.router.js';
+//import gameplayRouter from './routes/gamePlay.router.js'; // gamePlay.js 라우터 임포트
 import userRankSearchRouter from './routes/userRankSearch.router.js';
 import enhanceRouter from "./routes/enhance.router.js";
 
@@ -22,8 +22,8 @@ app.use("/api", [
   accountRouter,
   gachaRouter,
   playerRouter,
-  teamSettingRouter,
-  gameplayRouter,
+  //teamSettingRouter,
+  //gameplayRouter,
   userRankSearchRouter,
   enhanceRouter,
 ]);
