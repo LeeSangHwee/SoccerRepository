@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import express from 'express';
+import authMiddleware from "../middlewares/auth.middleware.js";
 import { prisma } from '../utils/prisma/index.js';
 
 const router = express.Router();
@@ -80,8 +81,39 @@ router.post('/sign-in', async (req, res, next) => {
         return res.status(200).json({ message: "로그인 성공" });
     } catch (err) {
         console.error("로그인 중 에러 발생", err);
-        return res.status(500).json({ message: "로그인 중 에러가 발생하였습니다." });
+        return res.status(500).json({ message: "로그인 중 에러가 발생했습니다." });
     }
 });
+//캐쉬충전 API
+router.post('/purchase', authMiddleware, async (req, res, next) => {
+    try {
+        // 사용자 id 가져오기
+        const userId = req.user.id;
+        const user = await prisma.account.findUnique({
+            where: { id: userId },
+        });
 
+        if(!user) {
+            return res.status(403).json({message:"계정이 올바르지 않습니다."});
+        }
+        // 요청시 1000 cash 충전
+        const increaseCash = 1000;
+        await prisma.account.update({
+            where:{id: userId},
+            data:{cash: {increment: increaseCash}},
+        });
+        const updatedUser = await prisma.account.findUnique({
+            where:{id: userId},
+        });
+
+        return res.status(200).json({
+            message: "캐쉬를 충전했습니다.",
+            cash: updatedUser.cash,
+        });
+
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json({ message: "캐쉬충전 중 에러가 발생했습니다." })
+    }
+});
 export default router;
