@@ -11,7 +11,7 @@ import enhanceRouter from "./routes/enhance.router.js";
 import inventoryRouter from "./routes/inventory.router.js";
 
 const app = express();
-const PORT = 3000;
+const PORT = 3306;
 
 // Body 데이터를 JSON 형태로 받을 수 있게 설정
 app.use(express.json());
