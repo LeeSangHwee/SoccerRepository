@@ -2,7 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 dotenv.config();
-import gameplayRouter from './routes/gamePlay_router.js'; // gamePlay.js 라우터 임포트
+import gameplayRouter from './routes/gamePlay.router.js'; // gamePlay.js 라우터 임포트
 import accountRouter from './routes/account.router.js';
 import gachaRouter from './routes/gacha.router.js';
 
