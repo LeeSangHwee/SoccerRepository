@@ -45,6 +45,7 @@ router.post("/gacha", authMiddleware, async (req, res, next) => {
                 rarity: hit_rarity,
             },
             select: {
+                playerId: true,
                 name: true,
                 rarity: true,
                 speed: true,
@@ -55,26 +56,29 @@ router.post("/gacha", authMiddleware, async (req, res, next) => {
             },
         });
         //console.log(characterTable)
+        if(playerTable.length <= 0){
+            return res.status(501).json({message:"선수 풀이 충분하지 않습니다."});
+        }
         const result_player = playerTable[Math.floor((Math.random() * playerTable.length - 1) + 1)];
-
+        console.log(result_player);
         //중복 확인
-        const isExistCharacter = await prisma.inventory.findFirst({
+        const isExistPlayer = await prisma.inventory.findFirst({
             where: {
-                id: userId.id,
+                accountId: userId.id,
                 playerId: result_player.playerId,
             },
         });
 
-        if (isExistCharacter) {
+        if (isExistPlayer) {
             return res.status(201).json({
-                message: `${isExistCharacter.name} 선수 보유중`,
+                message: `${isExistPlayer.name} 선수 보유중`,
                 data: result_player,
             });
         }
         //인벤토리에 생성
         await prisma.inventory.create({
             data: {
-                id: userId.id,
+                accountId: userId.id,
                 playerId: result_player.playerId,
             },
         });
@@ -82,7 +86,16 @@ router.post("/gacha", authMiddleware, async (req, res, next) => {
         //응답 메시지
         return res.status(201).json({
             message: `${result_player.rarity}급 선수 ${result_player.name} `,
-            data: result_player,
+            data: {
+                name: result_player.name,
+                rarity: result_player.rarity,
+                speed: result_player.speed,
+                goal: result_player.goal,
+                shot: result_player.shot,
+                defense: result_player.defense,
+                stamina: result_player.stamina,
+                remaincash: user.cash
+            },
         });
     } catch (err) {
         //next(err);
