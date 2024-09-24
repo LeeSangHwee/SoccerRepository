@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { userDataClient } from "../utils/prisma/index.js";
+import { prisma } from '../utils/prisma/index.js';
 
 export default async function (req, res, next) {
     try {
@@ -12,10 +12,10 @@ export default async function (req, res, next) {
             throw new Error('토큰 타입이 일치하지 않습니다.');
 
         const decodedToken = jwt.verify(token, process.env.JWT_SECRET_KEY);
-        const userId = decodedToken.userId;
+        const id = decodedToken.id;
 
-        const user = await userDataClient.users.findFirst({
-            where: { userId: +userId },
+        const user = await prisma.account.findFirst({
+            where: { id: +id },
         });
         if (!user) {
             throw new Error('토큰 사용자가 존재하지 않습니다.');
