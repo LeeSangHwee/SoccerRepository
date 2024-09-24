@@ -22,7 +22,10 @@ router.post("/gacha", authMiddleware, async (req, res, next) => {
                 message: "보유 캐쉬가 부족합니다.",
             });
         }
-        user.cash -= cost;
+        await prisma.account.update({
+            where:{id: user.id},
+            data: {cash: {decrement: cost}}
+        })
         /*
         가챠 로직
         등급 뽑기 -> 해당 등급 선수 중 랜덤        
@@ -64,21 +67,21 @@ router.post("/gacha", authMiddleware, async (req, res, next) => {
         //중복 확인
         const isExistPlayer = await prisma.inventory.findFirst({
             where: {
-                accountId: userId.id,
+                accountId: user.id,
                 playerId: result_player.playerId,
             },
         });
 
         if (isExistPlayer) {
             return res.status(201).json({
-                message: `${isExistPlayer.name} 선수 보유중`,
+                message: `${isExistPlayer.name} 선수는 보유중입니다.`,
                 data: result_player,
             });
         }
         //인벤토리에 생성
         await prisma.inventory.create({
             data: {
-                accountId: userId.id,
+                accountId: user.id,
                 playerId: result_player.playerId,
             },
         });
