@@ -28,6 +28,14 @@ function calculateTeamScore(team) {
   return totalScore;
 }
 
+// 비동기 작업 (DB에 게임 결과 저장)
+async function saveGameResult(result) {
+  return new Promise((resolve) => {
+    console.log('Game result saved to database:', result);
+    resolve();
+  });
+}
+
 // 게임 결과 API
 router.post('/play', authMiddleware, async (req, res, next) => {
   try {
@@ -74,6 +82,9 @@ router.post('/play', authMiddleware, async (req, res, next) => {
       user_B.rp += 10;
       result = `B 유저 승리: B ${bScore}-${aScore} A`;
     }
+
+    // // 비동기 작업: 게임 결과 저장 (DB 또는 외부 API)
+    // await saveGameResult(result);
 
     // 결과 응답
     res.json({ result });
