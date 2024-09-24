@@ -5,6 +5,7 @@ dotenv.config();
 import gameplayRouter from './routes/gamePlay.router.js'; // gamePlay.js 라우터 임포트
 import accountRouter from './routes/account.router.js';
 import gachaRouter from './routes/gacha.router.js';
+import playerRouter from './routes/player.router.js';
 
 const app = express();
 const PORT = 3306;
@@ -13,7 +14,7 @@ const PORT = 3306;
 app.use(express.json());
 
 // api/games 경로로 gameRouter 사용
-app.use('/api', [gameplayRouter, accountRouter, gachaRouter]);
+app.use('/api', [gameplayRouter, accountRouter, gachaRouter, playerRouter]);
 
 // 서버 실행
 app.listen(PORT, () => {

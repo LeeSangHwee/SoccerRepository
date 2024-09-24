@@ -85,7 +85,9 @@ router.post("/gacha", authMiddleware, async (req, res, next) => {
             data: result_player,
         });
     } catch (err) {
-        next(err);
+        //next(err);
+        console.error("가챠 중 에러 발생", err);
+        return res.status(500).json({ message: "가챠 중 에러가 발생하였습니다." });
     }
 });
 
