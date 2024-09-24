@@ -21,8 +21,8 @@ model Account {
   cash     Int    @default(2000)
   rp       Int    @default(1000)
 
-  inventory Inventory?
-  team      Team?
+  inventory Inventory[]
+  team      Team[]
   playerInventory PlayerInventory[]  
 
   @@map("Account")
@@ -30,7 +30,7 @@ model Account {
 
 model Inventory {
   inventoryId Int @id @default(autoincrement())
-  accountId   Int @unique @map("account_id")
+  accountId   Int @map("account_id")
   playerId    Int
 
   user Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
@@ -40,7 +40,7 @@ model Inventory {
 
 model Team {
   teamId    Int @id @default(autoincrement())
-  accountId Int @unique @map("account_id")
+  accountId Int @map("account_id")
   playerId  Int
 
   user Account @relation(fields: [accountId], references: [id], onDelete: Cascade)

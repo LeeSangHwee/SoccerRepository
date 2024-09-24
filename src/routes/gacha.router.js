@@ -44,7 +44,21 @@ router.post("/gacha", authMiddleware, async (req, res, next) => {
     // 해당 등급의 선수 중 랜덤 선택
     const players = await prisma.player.findMany({
       where: { rarity: hit_rarity },
+      select: {
+        playerId: true,
+        name: true,
+        rarity: true,
+        speed: true,
+        goal: true,
+        shot: true,
+        defense: true,
+        stamina: true,
+      },
     });
+
+    if (players.length === 0) {
+      return res.status(501).json({ message: "선수 풀이 충분하지 않습니다." });
+    }
 
     const randomPlayer = players[Math.floor(Math.random() * players.length)];
 
@@ -61,6 +75,7 @@ router.post("/gacha", authMiddleware, async (req, res, next) => {
       message: `축하합니다! ${randomPlayer.rarity}급 ${randomPlayer.name} 선수를 뽑았습니다!`,
       player: randomPlayer,
       inventoryId: newInventoryItem.id, // 새롭게 부여된 인벤토리 ID
+      remaincash: user.cash - cost, // 남은 캐시 표시
     });
   } catch (err) {
     console.error("가챠 중 에러 발생", err);
