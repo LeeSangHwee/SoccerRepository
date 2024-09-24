@@ -87,6 +87,7 @@ router.post('/sign-in', async (req, res, next) => {
 //캐쉬충전 API
 router.post('/purchase', authMiddleware, async (req, res, next) => {
     try {
+        const {amount} = req.body;
         // 사용자 id 가져오기
         const userId = req.user.id;
         const user = await prisma.account.findUnique({
@@ -96,8 +97,8 @@ router.post('/purchase', authMiddleware, async (req, res, next) => {
         if(!user) {
             return res.status(403).json({message:"계정이 올바르지 않습니다."});
         }
-        // 요청시 1000 cash 충전
-        const increaseCash = 1000;
+        // 요청시 amount 만큼 cash 충전
+        const increaseCash = amount;
         await prisma.account.update({
             where:{id: userId},
             data:{cash: {increment: increaseCash}},
@@ -107,13 +108,13 @@ router.post('/purchase', authMiddleware, async (req, res, next) => {
         });
 
         return res.status(200).json({
-            message: "캐쉬를 충전했습니다.",
+            message: `${increaseCash}캐시를 충전했습니다.`,
             cash: updatedUser.cash,
         });
 
     } catch (err) {
         console.log(err);
-        return res.status(500).json({ message: "캐쉬충전 중 에러가 발생했습니다." })
+        return res.status(500).json({ message: "캐시충전 중 에러가 발생했습니다." })
     }
 });
 export default router;
