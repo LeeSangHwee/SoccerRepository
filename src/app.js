@@ -9,6 +9,7 @@ import gameplayRouter from "./routes/gamePlay.router.js"; // gamePlay.js 라우�
 import UserRankSearchRouter from "./routes/UserRankSearch.router.js";
 import enhanceRouter from "./routes/enhance.router.js";
 import inventoryRouter from "./routes/inventory.router.js";
+import teamSettingRouter from "./routes/teamSetting.router.js";
 
 const app = express();
 const PORT = 3306;
@@ -24,6 +25,7 @@ app.use("/api", [
   UserRankSearchRouter,
   enhanceRouter,
   inventoryRouter,
+  teamSettingRouter,
 ]);
 
 // 서버 실행
