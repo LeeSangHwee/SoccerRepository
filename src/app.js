@@ -4,6 +4,7 @@ import cookieParser from 'cookie-parser';
 dotenv.config();
 import accountRouter from './routes/account.router.js';
 import gachaRouter from './routes/gacha.router.js';
+import playerRouter from './routes/player.router.js';
 import gameplayRouter from './routes/gamePlay.router.js'; // gamePlay.js 라우터 임포트
 import UserRankSearchRouter from './routes/UserRankSearch.router.js';
 
