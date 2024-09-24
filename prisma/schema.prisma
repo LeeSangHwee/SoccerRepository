@@ -52,8 +52,8 @@ model Player {
   name        String @unique
   rarity      String
   speed       Int
-  goal   Int
-  shot  Int
+  goal        Int
+  shot        Int
   defense     Int
   stamina     Int
 

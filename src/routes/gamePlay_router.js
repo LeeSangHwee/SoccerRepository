@@ -72,6 +72,8 @@ router.post('/play', async (req, res) => {
       const aScore = Math.floor(Math.random() * 4) + 2; // 2~5
       const bScore = Math.floor(Math.random() * Math.min(3, aScore));
       result = `A 유저 승리: A ${aScore}-${bScore} B`;
+
+      
     } else {
       // B 팀이 승리하는 경우
       const bScore = Math.floor(Math.random() * 4) + 2;
