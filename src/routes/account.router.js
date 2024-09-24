@@ -61,7 +61,7 @@ router.post('/sign-in', async (req, res, next) => {
         //id, password 값으로 로그인 요청
         const { account, password } = req.body;
         const user = await prisma.account.findFirst({ where: { account } });
-        console.log(user); //요청 확인용 로그
+        //console.log(user); //요청 확인용 로그
 
         //계정 정보 불일치
         if (!user)

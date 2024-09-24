@@ -32,7 +32,7 @@ model PlayerInventory {
   accountId        Int
   playerId         Int
   enhancementLevel Int     @default(0)
-  player           Player  @relation(fields: [playerId], references: [playerId])
+  Player           Player  @relation(fields: [playerId], references: [playerId])
   account          Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
   @@unique([accountId, playerId, enhancementLevel])
