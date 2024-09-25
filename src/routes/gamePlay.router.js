@@ -1,24 +1,9 @@
-import express from 'express';
+import express from "express";
 import authMiddleware from "../middlewares/auth.middleware.js";
-import { prisma } from '../utils/prisma/index.js';
+import { prisma } from "../utils/prisma/index.js";
 
-const router = express.Router(); // express.Router()를 이용해 라우터를 생성합니다.
+const router = express.Router();
 
-// A 유저 팀과 B 유저 팀의 스탯 예시
-// const teams = {
-//   A: {
-//     player1: { speed: 85, goal: 90, shot: 88, defense: 60, stamina: 80 },
-//     player2: { speed: 78, goal: 75, shot: 80, defense: 70, stamina: 85 },
-//     player3: { speed: 70, goal: 60, shot: 65, defense: 90, stamina: 82 },
-//   },
-//   B: {
-//     player1: { speed: 88, goal: 85, shot: 90, defense: 55, stamina: 78 },
-//     player2: { speed: 80, goal: 70, shot: 75, defense: 72, stamina: 88 },
-//     player3: { speed: 72, goal: 65, shot: 68, defense: 92, stamina: 83 },
-//   },
-// };
-
-// 가중치 설정
 const weights = {
   speed: 0.1,
   goal: 0.25,
@@ -27,8 +12,11 @@ const weights = {
   stamina: 0.2,
 };
 
-// 각 팀의 총 점수를 계산하는 함수
 function calculateTeamScore(team) {
+  if (!team || !team.player1 || !team.player2 || !team.player3) {
+    return 0; // 팀이 없거나 부족한 경우 기본 점수를 0으로 설정
+  }
+
   let totalScore = 0;
   for (const player of Object.values(team)) {
     const score =
@@ -42,70 +30,94 @@ function calculateTeamScore(team) {
   return totalScore;
 }
 
-// 비동기 작업 (DB에 게임 결과 저장)
-async function saveGameResult(result) {
-  return new Promise((resolve) => {
-    console.log('Game result saved to database:', result);
-    resolve();
-  });
-}
-
-// 게임 결과 API
-router.post('/play', authMiddleware, async (req, res, next) => {
+router.post("/play", authMiddleware, async (req, res, next) => {
   try {
-    //사용자id 가져오기
     const userId = req.user;
     const user_A = await prisma.account.findFirst({
-      where: {
-        id: userId.id,
-      },
+      where: { id: userId.id },
+      include: { team: true }, // team 데이터를 가져옴
     });
-    
-    // 상대 매칭
+
+    if (!user_A || !user_A.team) {
+      return res
+        .status(400)
+        .json({ message: "팀 구성이 완료되지 않았습니다." });
+    }
+
     const userFind = await prisma.account.findMany({
       where: {
         rp: {
           gte: userId.rp - 10,
-          lte: userId.rp + 10
+          lte: userId.rp + 10,
         },
-        id: {not:userId.id}
+        id: { not: userId.id },
       },
+      include: { team: true },
     });
-    const user_B = userFind[Math.floor((Math.random() * userFind.length - 1) + 1)];
+
+    const user_B = userFind[Math.floor(Math.random() * userFind.length)];
+
+    if (!user_B || !user_B.team) {
+      return res
+        .status(400)
+        .json({ message: "상대방 팀 구성이 완료되지 않았습니다." });
+    }
 
     const scoreA = calculateTeamScore(user_A.team);
     const scoreB = calculateTeamScore(user_B.team);
 
-    // 점수에 따른 최대값 설정
+    if (scoreA === 0 || scoreB === 0) {
+      return res.status(400).json({ message: "팀 구성이 불완전합니다." });
+    }
+
     const maxScore = scoreA + scoreB;
     const randomValue = Math.random() * maxScore;
     let result;
 
-    // A 팀이 승리하는 경우
+    const rpDifference = Math.abs(user_A.rp - user_B.rp);
+    let difficultyLevel = "easy";
+    if (rpDifference > 10) difficultyLevel = "hard";
+
     if (randomValue < scoreA) {
-      const aScore = Math.floor(Math.random() * 4) + 2; // 2~5
-      const bScore = Math.floor(Math.random() * Math.min(3, aScore));
       user_A.rp += 10;
       user_B.rp -= 10;
-      result = `A 유저 승리: A ${aScore}-${bScore} B`;
+      result = `A 유저 승리: A ${
+        Math.floor(Math.random() * 4) + 2
+      } - ${Math.floor(Math.random() * 3)} B`;
+
+      if (difficultyLevel === "hard") {
+        const reward = Math.random() < 0.5 ? "고급 강화석" : "강화 보호석";
+        await prisma.material.create({
+          data: { accountId: user_A.id, materialType: reward },
+        });
+      } else {
+        await prisma.material.create({
+          data: { accountId: user_A.id, materialType: "일반 강화석" },
+        });
+      }
     } else {
-      // B 팀이 승리하는 경우
-      const bScore = Math.floor(Math.random() * 4) + 2;
-      const aScore = Math.floor(Math.random() * Math.min(3, bScore));
       user_A.rp -= 10;
       user_B.rp += 10;
-      result = `B 유저 승리: B ${bScore}-${aScore} A`;
+      result = `B 유저 승리: B ${
+        Math.floor(Math.random() * 4) + 2
+      } - ${Math.floor(Math.random() * 3)} A`;
+
+      if (difficultyLevel === "hard") {
+        const reward = Math.random() < 0.5 ? "고급 강화석" : "강화 보호석";
+        await prisma.material.create({
+          data: { accountId: user_B.id, materialType: reward },
+        });
+      } else {
+        await prisma.material.create({
+          data: { accountId: user_B.id, materialType: "일반 강화석" },
+        });
+      }
     }
 
-    // // 비동기 작업: 게임 결과 저장 (DB 또는 외부 API)
-    // await saveGameResult(result);
-
-    // 결과 응답
     res.json({ result });
   } catch (error) {
-    // 오류 처리
     console.error(error);
-    res.status(500).json({ message: 'Server Error: GamePlay' });
+    res.status(500).json({ message: "Server Error: GamePlay" });
   }
 });
 
