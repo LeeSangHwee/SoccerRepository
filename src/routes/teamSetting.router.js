@@ -20,11 +20,12 @@ router.post('/setPlayerTeam', authMiddleware, async (req, res) => {
             where: { accountId: user.id },
         })
         if (!gatherPlayer) {
-            return res.status(404).json({ message: '선수를 찾을 수 없습니다.' });
+            return res.status(404).json({ message: '보유한 선수를 찾을 수 없습니다.' });
         }
         const selectedPlayer = await prisma.playerInventory.findFirst({
-            where:{accountId: user.id, playerId: playerId},
+            where: { accountId: user.id, playerId: playerId },
         })
+        if (!selectedPlayer) return res.status(404).json({ message: '보유하지 않은 선수는 편성할 수 없습니다.' });
         // 팀에 3명의 선수가 있는지 확인
         const myTeam = await prisma.team.findMany({
             where: { accountId: user.id },
@@ -32,35 +33,41 @@ router.post('/setPlayerTeam', authMiddleware, async (req, res) => {
         console.log(myTeam);
         if (myTeam.length < 3) {
             // 팀에 자리가 남아있으면 선수 추가
-            await prisma.team.create({
-                data: {
+            // 팀에 중복되는 선수가 있다면 생성은 하지않고 인벤토리에서만 데이터 제거 (테스트 과정에서 발생한 중복 데이터 제거용)
+            const isExistTeamPlayer = await prisma.team.findFirst({
+                where: {
                     accountId: user.id,
                     playerId: selectedPlayer.playerId,
-                    enhancementLevel: selectedPlayer.enhancementLevel
                 }
             });
+            if (!isExistTeamPlayer) {
+                await prisma.team.create({
+                    data: {
+                        accountId: user.id,
+                        playerId: selectedPlayer.playerId,
+                        enhancementLevel: selectedPlayer.enhancementLevel
+                    }
+                });
+            }
             // 추가한 선수 인벤토리에서 제거
-            // const invenPlayer = await prisma.playerInventory.findFirst({
-            //     where: { accountId: user.id, playerId: playerId },
-            // });
             await prisma.playerInventory.delete({
                 where: { id: selectedPlayer.id },
             });
         } else {
             // 교체할 선수를 선택
-            const replacePlayer = await prisma.team.findFirst({
+            const replacedPlayer = await prisma.team.findFirst({
                 where: {
                     accountId: user.id,
                     playerId: replacePlayerId
                 }
             });
-            if (!replacePlayer) {
-                return res.status(404).json({ message: '교체할 선수가 팀에 없습니다.' });
+            if (!replacedPlayer) {
+                return res.status(404).json({ message: '교체할 선수를 잘못 지정하셨습니다.' });
             }
 
             // 교체 로직 (선수를 제거하고 새로운 선수 추가)
             await prisma.team.delete({
-                where: { teamId: replacePlayer.teamId }
+                where: { teamId: replacedPlayer.teamId }
             });
             await prisma.team.create({
                 data: {
@@ -69,10 +76,27 @@ router.post('/setPlayerTeam', authMiddleware, async (req, res) => {
                     enhancementLevel: selectedPlayer.enhancementLevel
                 }
             });
-            // 추가한 선수 인벤토리에서 제거
+            // 추가한 선수 인벤토리에서 제거      
             await prisma.playerInventory.delete({
                 where: { id: selectedPlayer.id },
             });
+            // 교체한 선수 인벤토리로            
+            // 중복되는 선수가 있다면 생성은 하지않고 팀에서만 데이터 제거 (테스트 과정에서 발생한 중복 데이터 제거용)      
+            const isExistInventoryPlayer = await prisma.playerInventory.findFirst({
+                where: {
+                    accountId: user.id,
+                    playerId: replacedPlayer.playerId,
+                }
+            });
+            if (!isExistInventoryPlayer) {
+                await prisma.playerInventory.create({
+                    data: {
+                        accountId: user.id,
+                        playerId: replacedPlayer.playerId,
+                        enhancementLevel: replacedPlayer.enhancementLevel
+                    }
+                });
+            }
         }
 
         res.json({ message: '선수가 팀에 편성되었습니다.' });
