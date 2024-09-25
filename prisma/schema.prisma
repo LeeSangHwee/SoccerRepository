@@ -21,29 +21,20 @@ model Account {
   cash     Int    @default(2000)
   rp       Int    @default(1000)
 
-  inventory Inventory[]
-  team      Team[]
-  playerInventory PlayerInventory[]  
+  team            Team[]
+  playerInventory PlayerInventory[]
 
   @@map("Account")
 }
 
-model Inventory {
-  inventoryId Int @id @default(autoincrement())
-  accountId   Int @map("account_id")
-  playerId    Int
-
-  user Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
-
-  @@map("Inventory")
-}
-
 model Team {
-  teamId    Int @id @default(autoincrement())
-  accountId Int @map("account_id")
-  playerId  Int
+  teamId           Int @id @default(autoincrement())
+  accountId        Int @map("account_id")
+  playerId         Int
+  enhancementLevel Int @default(0)
 
-  user Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  player  Player  @relation(fields: [playerId], references: [playerId], onDelete: Cascade)
 
   @@map("Team")
 }
@@ -59,17 +50,18 @@ model Player {
   stamina  Int
 
   playerInventory PlayerInventory[]
+  team            Team[]
 
   @@map("Player")
 }
 
 model PlayerInventory {
-  id              Int      @id @default(autoincrement())
-  accountId       Int     
-  playerId        Int      
-  enhancementLevel Int @default(0)  
-  player          Player   @relation(fields: [playerId], references: [playerId])
-  account         Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  id               Int     @id @default(autoincrement())
+  accountId        Int
+  playerId         Int
+  enhancementLevel Int     @default(0)
+  player           Player  @relation(fields: [playerId], references: [playerId])
+  account          Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
-  @@unique([accountId, playerId, enhancementLevel]) 
+  @@unique([accountId, playerId, enhancementLevel])
 }
