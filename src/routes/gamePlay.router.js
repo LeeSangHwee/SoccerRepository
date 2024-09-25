@@ -1,4 +1,4 @@
-import express from "express";
+import express, { response } from "express";
 import authMiddleware from "../middlewares/auth.middleware.js";
 import { prisma } from "../utils/prisma/index.js";
 
@@ -12,20 +12,20 @@ const weights = {
   stamina: 0.2,
 };
 
-function calculateTeamScore(team) {
-  if (!team || !team.player1 || !team.player2 || !team.player3) {
-    return 0; // 팀이 없거나 부족한 경우 기본 점수를 0으로 설정
-  }
-
+async function calculateTeamScore(team) {
   let totalScore = 0;
-  for (const player of Object.values(team)) {
-    const score =
-      player.speed * weights.speed +
-      player.goal * weights.goal +
-      player.shot * weights.shot +
-      player.defense * weights.defense +
-      player.stamina * weights.stamina;
-    totalScore += score;
+  for(let index = 0; index < 3; index++) {
+    const _player = await prisma.player.findFirst({
+      where: {playerId: team[index].playerId}
+    });
+  if(!_player) return res.status(404).json({message:"Error: calculateTeamScore"});
+    const score = 
+    _player.speed * weights.speed +
+    _player.goal * weights.goal +
+    _player.shot * weights.shot +
+    _player.defense * weights.defense +
+    _player.stamina * weights.stamina;
+    totalScore += score;           
   }
   return totalScore;
 }
@@ -38,7 +38,7 @@ router.post("/play", authMiddleware, async (req, res, next) => {
       include: { team: true }, // team 데이터를 가져옴
     });
 
-    if (!user_A || !user_A.team) {
+    if (!user_A || user_A.team.length != 3) {
       return res
         .status(400)
         .json({ message: "팀 구성이 완료되지 않았습니다." });
@@ -54,10 +54,10 @@ router.post("/play", authMiddleware, async (req, res, next) => {
       },
       include: { team: true },
     });
-
+    
     const user_B = userFind[Math.floor(Math.random() * userFind.length)];
-
-    if (!user_B || !user_B.team) {
+    
+    if (!user_B || user_B.team.length != 3) {
       return res
         .status(400)
         .json({ message: "상대방 팀 구성이 완료되지 않았습니다." });
