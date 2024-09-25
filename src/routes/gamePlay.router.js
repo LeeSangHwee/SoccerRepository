@@ -47,8 +47,8 @@ router.post("/play", authMiddleware, async (req, res, next) => {
     const userFind = await prisma.account.findMany({
       where: {
         rp: {
-          gte: userId.rp - 10,
-          lte: userId.rp + 10,
+          gte: userId.rp - 30,
+          lte: userId.rp + 30,
         },
         id: { not: userId.id },
       },
@@ -79,8 +79,14 @@ router.post("/play", authMiddleware, async (req, res, next) => {
     if (rpDifference > 10) difficultyLevel = "hard";
 
     if (randomValue < scoreA) {
-      user_A.rp += 10;
-      user_B.rp -= 10;
+      await prisma.account.update({
+        where: { id: user_A.id },
+        data: { rp: user_A.rp + 10 },
+      });  
+      await prisma.account.update({
+        where: { id: user_B.id },
+        data: { rp: user_B.rp - 10 },
+      });
       result = `A 유저 승리: A ${
         Math.floor(Math.random() * 4) + 2
       } - ${Math.floor(Math.random() * 3)} B`;
@@ -96,8 +102,15 @@ router.post("/play", authMiddleware, async (req, res, next) => {
         });
       }
     } else {
-      user_A.rp -= 10;
-      user_B.rp += 10;
+      await prisma.account.update({
+        where: { id: user_A.id },
+        data: { rp: user_A.rp - 10 },
+      });  
+      await prisma.account.update({
+        where: { id: user_B.id },
+        data: { rp: user_B.rp + 10 },
+      });
+
       result = `B 유저 승리: B ${
         Math.floor(Math.random() * 4) + 2
       } - ${Math.floor(Math.random() * 3)} A`;
